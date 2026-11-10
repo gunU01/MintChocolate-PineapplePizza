@@ -14,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -219,5 +221,35 @@ class DebateControllerTest {
 
         // then
         result.andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteDebate() throws Exception {
+        // given
+        Long debateId = 3L;
+        long beforeCount = debateRepository.count();
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/debates/{id}", debateId));
+
+        // then
+        result.andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+        assertThat(debateRepository.findById(debateId)).isEmpty();
+        assertThat(debateRepository.count()).isEqualTo(beforeCount - 1);
+    }
+
+    @Test
+    void deleteDebateNotFound() throws Exception {
+        // given
+        Long debateId = 999L;
+        long beforeCount = debateRepository.count();
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/debates/{id}", debateId));
+
+        // then
+        result.andExpect(status().isNotFound());
+        assertThat(debateRepository.count()).isEqualTo(beforeCount);
     }
 }

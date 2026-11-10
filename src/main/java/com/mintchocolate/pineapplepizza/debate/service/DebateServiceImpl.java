@@ -59,4 +59,12 @@ public class DebateServiceImpl implements DebateService {
         );
         return DebateResponse.from(debate);
     }
+
+    @Override
+    @Transactional
+    public void deleteDebate(Long id) {
+        Debate debate = debateRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        debateRepository.delete(debate);
+    }
 }
