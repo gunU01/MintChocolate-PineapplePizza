@@ -14,4 +14,6 @@ public interface DebateService {
     List<DebateResponse> getDebates();
 
     DebateResponse updateDebate(Long id, DebateRequest request);
+
+    void deleteDebate(Long id);
 }
