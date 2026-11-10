@@ -1,6 +1,7 @@
 package com.mintchocolate.pineapplepizza.debate.controller;
 
 import com.mintchocolate.pineapplepizza.debate.dto.DebateRequest;
+import com.mintchocolate.pineapplepizza.debate.entity.Debate;
 import com.mintchocolate.pineapplepizza.debate.repository.DebateRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,5 +118,42 @@ class DebateControllerTest {
 
         // then
         result.andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getDebates() throws Exception {
+        // given
+        Debate debate = new Debate("평생 여름 VS 평생 겨울", "하나만 선택한다면?", "여름", "겨울");
+        Debate savedDebate = debateRepository.save(debate);
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$[0].id").value(savedDebate.getId().intValue()))
+                .andExpect(jsonPath("$[0].title").value("평생 여름 VS 평생 겨울"))
+                .andExpect(jsonPath("$[0].description").value("하나만 선택한다면?"))
+                .andExpect(jsonPath("$[0].optionA").value("여름"))
+                .andExpect(jsonPath("$[0].optionB").value("겨울"))
+                .andExpect(jsonPath("$[0].createdAt").isNotEmpty())
+                .andExpect(jsonPath("$[1].id").value(3))
+                .andExpect(jsonPath("$[2].id").value(2))
+                .andExpect(jsonPath("$[3].id").value(1));
+    }
+
+    @Test
+    void getDebatesWhenEmpty() throws Exception {
+        // given
+        debateRepository.deleteAll();
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
     }
 }

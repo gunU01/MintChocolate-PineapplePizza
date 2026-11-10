@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/debates")
 @RequiredArgsConstructor
@@ -31,5 +33,11 @@ public class DebateController {
     public ResponseEntity<DebateResponse> getDebateById(@PathVariable Long id) {
         DebateResponse response = debateService.getDebateById(id);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<DebateResponse>> getDebates() {
+        List<DebateResponse> responses = debateService.getDebates();
+        return ResponseEntity.ok(responses);
     }
 }
