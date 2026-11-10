@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +40,11 @@ public class DebateController {
     public ResponseEntity<List<DebateResponse>> getDebates() {
         List<DebateResponse> responses = debateService.getDebates();
         return ResponseEntity.ok(responses);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DebateResponse> updateDebate(@PathVariable Long id, @Valid @RequestBody DebateRequest request) {
+        DebateResponse response = debateService.updateDebate(id, request);
+        return ResponseEntity.ok(response);
     }
 }

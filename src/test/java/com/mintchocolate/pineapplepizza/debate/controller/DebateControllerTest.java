@@ -16,6 +16,7 @@ import tools.jackson.databind.json.JsonMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -155,5 +156,68 @@ class DebateControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void updateDebate() throws Exception {
+        // given
+        Long debateId = 3L;
+        DebateRequest request = new DebateRequest("수면 시간은 몇 시간이 적당할까요", "평소 수면 시간을 골라 주세요.", "6시간 미만", "6시간 이상");
+        JsonMapper jsonMapper = JsonMapper.builder().build();
+        String requestBody = jsonMapper.writeValueAsString(request);
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/debates/{id}", debateId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3))
+                .andExpect(jsonPath("$.title").value(request.getTitle()))
+                .andExpect(jsonPath("$.description").value(request.getDescription()))
+                .andExpect(jsonPath("$.optionA").value(request.getOptionA()))
+                .andExpect(jsonPath("$.optionB").value(request.getOptionB()));
+        Debate updatedDebate = debateRepository.findById(debateId).orElseThrow();
+        assertThat(updatedDebate.getTitle()).isEqualTo(request.getTitle());
+    }
+
+    @Test
+    void updateDebateWithBlankTitle() throws Exception {
+        // given
+        Long debateId = 3L;
+        DebateRequest request = new DebateRequest(" ", "수정한 설명", "6시간 미만", "6시간 이상");
+        JsonMapper jsonMapper = JsonMapper.builder().build();
+        String requestBody = jsonMapper.writeValueAsString(request);
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/debates/{id}", debateId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody));
+
+        // then
+        result.andExpect(status().isBadRequest());
+        Debate debate = debateRepository.findById(debateId).orElseThrow();
+        assertThat(debate.getTitle()).isEqualTo("다들 몇 시간 정도 주무시나요");
+        assertThat(debate.getDescription()).isEqualTo("제곧내");
+        assertThat(debate.getOptionA()).isEqualTo("7시간 미만");
+        assertThat(debate.getOptionB()).isEqualTo("7시간 이상");
+    }
+
+    @Test
+    void updateDebateNotFound() throws Exception {
+        // given
+        Long debateId = 999L;
+        DebateRequest request = new DebateRequest("수면 시간은 몇 시간이 적당할까요", "평소 수면 시간을 골라 주세요.", "6시간 미만", "6시간 이상");
+        JsonMapper jsonMapper = JsonMapper.builder().build();
+        String requestBody = jsonMapper.writeValueAsString(request);
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/debates/{id}", debateId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody));
+
+        // then
+        result.andExpect(status().isNotFound());
     }
 }
