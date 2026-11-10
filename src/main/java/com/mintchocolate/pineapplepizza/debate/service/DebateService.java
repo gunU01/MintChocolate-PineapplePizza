@@ -6,4 +6,6 @@ import com.mintchocolate.pineapplepizza.debate.dto.DebateResponse;
 public interface DebateService {
 
     DebateResponse createDebate(DebateRequest request);
+
+    DebateResponse getDebateById(Long id);
 }

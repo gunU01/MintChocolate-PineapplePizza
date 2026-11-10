@@ -5,8 +5,10 @@ import com.mintchocolate.pineapplepizza.debate.dto.DebateResponse;
 import com.mintchocolate.pineapplepizza.debate.entity.Debate;
 import com.mintchocolate.pineapplepizza.debate.repository.DebateRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,5 +27,12 @@ public class DebateServiceImpl implements DebateService {
         );
         Debate savedDebate = debateRepository.save(debate);
         return DebateResponse.from(savedDebate);
+    }
+
+    @Override
+    public DebateResponse getDebateById(Long id) {
+        Debate debate = debateRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return DebateResponse.from(debate);
     }
 }

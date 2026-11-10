@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -86,5 +87,35 @@ class DebateControllerTest {
         // then
         result.andExpect(status().isBadRequest());
         assertThat(debateRepository.count()).isEqualTo(beforeCount);
+    }
+
+    @Test
+    void getDebateById() throws Exception {
+        // given
+        Long debateId = 3L;
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates/{id}", debateId));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3))
+                .andExpect(jsonPath("$.title").value("다들 몇 시간 정도 주무시나요"))
+                .andExpect(jsonPath("$.description").value("제곧내"))
+                .andExpect(jsonPath("$.optionA").value("7시간 미만"))
+                .andExpect(jsonPath("$.optionB").value("7시간 이상"))
+                .andExpect(jsonPath("$.createdAt").isNotEmpty());
+    }
+
+    @Test
+    void getDebateByIdNotFound() throws Exception {
+        // given
+        Long debateId = 999L;
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates/{id}", debateId));
+
+        // then
+        result.andExpect(status().isNotFound());
     }
 }
