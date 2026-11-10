@@ -45,6 +45,13 @@ public class Debate {
         this.optionB = optionB;
     }
 
+    public void update(String title, String description, String optionA, String optionB) {
+        this.title = title;
+        this.description = description;
+        this.optionA = optionA;
+        this.optionB = optionB;
+    }
+
     @PrePersist
     private void onCreate() {
         this.createdAt = LocalDateTime.now();

@@ -45,4 +45,18 @@ public class DebateServiceImpl implements DebateService {
                 .map(DebateResponse::from)
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public DebateResponse updateDebate(Long id, DebateRequest request) {
+        Debate debate = debateRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        debate.update(
+                request.getTitle(),
+                request.getDescription(),
+                request.getOptionA(),
+                request.getOptionB()
+        );
+        return DebateResponse.from(debate);
+    }
 }
