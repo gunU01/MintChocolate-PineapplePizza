@@ -7,6 +7,7 @@ import com.mintchocolate.pineapplepizza.vote.dto.VoteResponse;
 import com.mintchocolate.pineapplepizza.vote.entity.Vote;
 import com.mintchocolate.pineapplepizza.vote.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,15 @@ public class VoteServiceImpl implements VoteService {
             Vote savedVote = voteRepository.saveAndFlush(vote);
             return VoteResponse.from(savedVote);
         } catch (DataIntegrityViolationException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
+            Throwable cause = e.getCause();
+            if (cause instanceof ConstraintViolationException violation
+                    && "23505".equals(violation.getSQLState())
+                    && violation.getConstraintName() != null
+                    && violation.getConstraintName().toLowerCase(java.util.Locale.ROOT)
+                            .contains("uk_votes_debate_voter")) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT);
+            }
+            throw e;
         }
     }
 }
