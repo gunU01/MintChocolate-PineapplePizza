@@ -29,4 +29,12 @@ public class CommentServiceImpl implements CommentService {
         Comment savedComment = commentRepository.save(comment);
         return CommentResponse.from(savedComment);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CommentResponse getCommentById(Long id) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return CommentResponse.from(comment);
+    }
 }
