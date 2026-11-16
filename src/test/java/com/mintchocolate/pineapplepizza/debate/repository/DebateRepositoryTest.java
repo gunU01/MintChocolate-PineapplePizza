@@ -4,6 +4,9 @@ import com.mintchocolate.pineapplepizza.debate.entity.Debate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -68,12 +71,14 @@ class DebateRepositoryTest {
         debateRepository.save(new Debate("프로그래밍 언어 선택", "Java도 후보입니다", "C", "Python"));
 
         // when
-        List<Debate> debates = debateRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDescIdDesc("java");
+        PageRequest pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt", "id"));
+        Page<Debate> debates = debateRepository.findByTitleContainingIgnoreCase("java", pageable);
 
         // then
-        assertThat(debates).hasSize(2);
-        assertThat(debates.get(0).getId()).isEqualTo(secondDebate.getId());
-        assertThat(debates.get(1).getId()).isEqualTo(firstDebate.getId());
+        assertThat(debates.getTotalElements()).isEqualTo(2);
+        assertThat(debates.getContent()).hasSize(2);
+        assertThat(debates.getContent().get(0).getId()).isEqualTo(secondDebate.getId());
+        assertThat(debates.getContent().get(1).getId()).isEqualTo(firstDebate.getId());
     }
 
     @Test

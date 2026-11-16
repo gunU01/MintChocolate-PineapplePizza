@@ -1,9 +1,9 @@
 package com.mintchocolate.pineapplepizza.debate.service;
 
+import com.mintchocolate.pineapplepizza.debate.dto.DebatePageRequest;
 import com.mintchocolate.pineapplepizza.debate.dto.DebateRequest;
 import com.mintchocolate.pineapplepizza.debate.dto.DebateResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface DebateService {
 
@@ -11,7 +11,7 @@ public interface DebateService {
 
     DebateResponse getDebateById(Long id);
 
-    List<DebateResponse> getDebates(String keyword);
+    Page<DebateResponse> getDebates(String keyword, DebatePageRequest request);
 
     DebateResponse updateDebate(Long id, DebateRequest request);
 
