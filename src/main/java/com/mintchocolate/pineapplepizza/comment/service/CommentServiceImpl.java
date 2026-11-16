@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -36,5 +38,17 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return CommentResponse.from(comment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getCommentsByDebateId(Long debateId) {
+        if (!debateRepository.existsById(debateId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return commentRepository.findByDebateIdOrderByCreatedAtDescIdDesc(debateId)
+                .stream()
+                .map(CommentResponse::from)
+                .toList();
     }
 }
