@@ -45,4 +45,17 @@ public class VoteServiceImpl implements VoteService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return VoteResponse.from(vote);
     }
+
+    @Override
+    @Transactional
+    public VoteResponse updateMyVote(Long debateId, String voterKey, VoteRequest request) {
+        if (!debateRepository.existsById(debateId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        Vote vote = voteRepository.findByDebateIdAndVoterKey(debateId, voterKey)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        vote.changeChoice(request.getChoice());
+        return VoteResponse.from(vote);
+    }
 }

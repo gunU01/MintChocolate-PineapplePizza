@@ -19,6 +19,7 @@ import tools.jackson.databind.json.JsonMapper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -229,4 +230,39 @@ class VoteControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void updateMyVote() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(1L).orElseThrow();
+        Vote vote = voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+        long beforeCount = voteRepository.count();
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/debates/1/votes/me")
+                .header("X-Voter-Key", "voter-a")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"choice\":\"B\"}"));
+
+        // then
+        result.andExpect(status().isOk());
+        assertThat(vote.getChoice()).isEqualTo(VoteChoice.B);
+        assertThat(voteRepository.count()).isEqualTo(beforeCount);
+    }
+
+    @Test
+    void updateMyVoteWithOtherKey() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(1L).orElseThrow();
+        Vote vote = voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/debates/1/votes/me")
+                .header("X-Voter-Key", "voter-b")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"choice\":\"B\"}"));
+
+        // then
+        result.andExpect(status().isNotFound());
+        assertThat(vote.getChoice()).isEqualTo(VoteChoice.A);
+    }
 }
