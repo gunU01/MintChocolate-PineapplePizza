@@ -46,6 +46,11 @@ public class Comment {
         this.content = content;
     }
 
+    public void update(String nickname, String content) {
+        this.nickname = nickname;
+        this.content = content;
+    }
+
     @PrePersist
     private void onCreate() {
         this.createdAt = LocalDateTime.now();

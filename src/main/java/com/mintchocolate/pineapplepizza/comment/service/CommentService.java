@@ -12,4 +12,6 @@ public interface CommentService {
     CommentResponse getCommentById(Long id);
 
     List<CommentResponse> getCommentsByDebateId(Long debateId);
+
+    CommentResponse updateComment(Long id, CommentRequest request);
 }
