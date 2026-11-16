@@ -46,4 +46,22 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.nickname").value("석주"))
                 .andExpect(jsonPath("$.content").value("저는 겨울을 선택하겠습니다."));
     }
+
+    @Test
+    void getCommentsByDebateId() throws Exception {
+        // given
+        Debate debate = debateRepository.save(
+                new Debate("평생 여름 VS 평생 겨울", "하나만 선택한다면?", "여름", "겨울"));
+        commentRepository.save(new Comment(debate, "석주", "첫 번째 댓글"));
+        commentRepository.save(new Comment(debate, "석주", "두 번째 댓글"));
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates/{id}/comments", debate.getId()));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].content").value("두 번째 댓글"))
+                .andExpect(jsonPath("$[1].content").value("첫 번째 댓글"));
+    }
 }
