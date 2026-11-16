@@ -43,9 +43,14 @@ public class DebateServiceImpl implements DebateService {
     }
 
     @Override
-    public List<DebateResponse> getDebates() {
-        return debateRepository.findAllByOrderByCreatedAtDescIdDesc()
-                .stream()
+    public List<DebateResponse> getDebates(String keyword) {
+        List<Debate> debates;
+        if (keyword == null || keyword.isBlank()) {
+            debates = debateRepository.findAllByOrderByCreatedAtDescIdDesc();
+        } else {
+            debates = debateRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDescIdDesc(keyword.trim());
+        }
+        return debates.stream()
                 .map(DebateResponse::from)
                 .toList();
     }

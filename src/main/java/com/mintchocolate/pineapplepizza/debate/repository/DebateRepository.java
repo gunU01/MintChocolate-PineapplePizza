@@ -8,4 +8,6 @@ import java.util.List;
 public interface DebateRepository extends JpaRepository<Debate, Long> {
 
     List<Debate> findAllByOrderByCreatedAtDescIdDesc();
+
+    List<Debate> findByTitleContainingIgnoreCaseOrderByCreatedAtDescIdDesc(String keyword);
 }

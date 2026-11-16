@@ -61,6 +61,22 @@ class DebateRepositoryTest {
     }
 
     @Test
+    void findByTitleContainingIgnoreCase() {
+        // given
+        Debate firstDebate = debateRepository.save(new Debate("Java VS Python", "언어 선택", "Java", "Python"));
+        Debate secondDebate = debateRepository.save(new Debate("JAVA VS Kotlin", "언어 선택", "Java", "Kotlin"));
+        debateRepository.save(new Debate("프로그래밍 언어 선택", "Java도 후보입니다", "C", "Python"));
+
+        // when
+        List<Debate> debates = debateRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDescIdDesc("java");
+
+        // then
+        assertThat(debates).hasSize(2);
+        assertThat(debates.get(0).getId()).isEqualTo(secondDebate.getId());
+        assertThat(debates.get(1).getId()).isEqualTo(firstDebate.getId());
+    }
+
+    @Test
     void findByIdNotFound() {
         // given
         Long debateId = 999L;

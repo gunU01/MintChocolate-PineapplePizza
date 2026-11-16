@@ -158,6 +158,45 @@ class DebateControllerTest {
     }
 
     @Test
+    void getDebatesWithKeyword() throws Exception {
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("keyword", " 시간 "));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(3))
+                .andExpect(jsonPath("$[0].title").value("다들 몇 시간 정도 주무시나요"));
+    }
+
+    @Test
+    void getDebatesWithBlankKeyword() throws Exception {
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("keyword", " "));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].id").value(3))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[2].id").value(1));
+    }
+
+    @Test
+    void getDebatesWithNoMatchingKeyword() throws Exception {
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("keyword", "없는검색어"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
     void getDebatesWhenEmpty() throws Exception {
         // given
         debateRepository.deleteAll();

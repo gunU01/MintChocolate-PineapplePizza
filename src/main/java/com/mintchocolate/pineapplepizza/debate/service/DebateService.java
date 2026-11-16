@@ -11,7 +11,7 @@ public interface DebateService {
 
     DebateResponse getDebateById(Long id);
 
-    List<DebateResponse> getDebates();
+    List<DebateResponse> getDebates(String keyword);
 
     DebateResponse updateDebate(Long id, DebateRequest request);
 

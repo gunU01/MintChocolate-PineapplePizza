@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -38,8 +39,8 @@ public class DebateController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DebateResponse>> getDebates() {
-        List<DebateResponse> responses = debateService.getDebates();
+    public ResponseEntity<List<DebateResponse>> getDebates(@RequestParam(required = false) String keyword) {
+        List<DebateResponse> responses = debateService.getDebates(keyword);
         return ResponseEntity.ok(responses);
     }
 
