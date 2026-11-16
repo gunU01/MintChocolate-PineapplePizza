@@ -10,4 +10,6 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
     Optional<Vote> findByDebateIdAndVoterKey(Long debateId, String voterKey);
 
     boolean existsByDebateIdAndVoterKey(Long debateId, String voterKey);
+
+    void deleteByDebateId(Long debateId);
 }

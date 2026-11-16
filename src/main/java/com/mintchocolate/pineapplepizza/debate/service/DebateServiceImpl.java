@@ -1,9 +1,11 @@
 package com.mintchocolate.pineapplepizza.debate.service;
 
+import com.mintchocolate.pineapplepizza.comment.repository.CommentRepository;
 import com.mintchocolate.pineapplepizza.debate.dto.DebateRequest;
 import com.mintchocolate.pineapplepizza.debate.dto.DebateResponse;
 import com.mintchocolate.pineapplepizza.debate.entity.Debate;
 import com.mintchocolate.pineapplepizza.debate.repository.DebateRepository;
+import com.mintchocolate.pineapplepizza.vote.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ import java.util.List;
 public class DebateServiceImpl implements DebateService {
 
     private final DebateRepository debateRepository;
+    private final VoteRepository voteRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional
@@ -65,6 +69,8 @@ public class DebateServiceImpl implements DebateService {
     public void deleteDebate(Long id) {
         Debate debate = debateRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        voteRepository.deleteByDebateId(id);
+        commentRepository.deleteByDebateId(id);
         debateRepository.delete(debate);
     }
 }

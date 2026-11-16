@@ -1,8 +1,13 @@
 package com.mintchocolate.pineapplepizza.debate.controller;
 
+import com.mintchocolate.pineapplepizza.comment.entity.Comment;
+import com.mintchocolate.pineapplepizza.comment.repository.CommentRepository;
 import com.mintchocolate.pineapplepizza.debate.dto.DebateRequest;
 import com.mintchocolate.pineapplepizza.debate.entity.Debate;
 import com.mintchocolate.pineapplepizza.debate.repository.DebateRepository;
+import com.mintchocolate.pineapplepizza.vote.entity.Vote;
+import com.mintchocolate.pineapplepizza.vote.entity.VoteChoice;
+import com.mintchocolate.pineapplepizza.vote.repository.VoteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +37,12 @@ class DebateControllerTest {
 
     @Autowired
     private DebateRepository debateRepository;
+
+    @Autowired
+    private VoteRepository voteRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Test
     void createDebate() throws Exception {
@@ -251,5 +262,29 @@ class DebateControllerTest {
         // then
         result.andExpect(status().isNotFound());
         assertThat(debateRepository.count()).isEqualTo(beforeCount);
+    }
+
+    @Test
+    void deleteDebateWithVotesAndComments() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(3L).orElseThrow();
+        Vote vote = voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+        Comment comment = commentRepository.save(new Comment(debate, "수아", "삭제할 댓글"));
+        Debate otherDebate = debateRepository.findById(2L).orElseThrow();
+        Vote otherVote = voteRepository.save(new Vote(otherDebate, "voter-a", VoteChoice.B));
+        Comment otherComment = commentRepository.save(new Comment(otherDebate, "수아", "남겨둘 댓글"));
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/debates/{id}", debate.getId()));
+
+        // then
+        result.andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+        assertThat(debateRepository.findById(debate.getId())).isEmpty();
+        assertThat(voteRepository.findById(vote.getId())).isEmpty();
+        assertThat(commentRepository.findById(comment.getId())).isEmpty();
+        assertThat(debateRepository.existsById(otherDebate.getId())).isTrue();
+        assertThat(voteRepository.existsById(otherVote.getId())).isTrue();
+        assertThat(commentRepository.existsById(otherComment.getId())).isTrue();
     }
 }
