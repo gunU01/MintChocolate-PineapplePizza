@@ -51,4 +51,13 @@ public class CommentServiceImpl implements CommentService {
                 .map(CommentResponse::from)
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public CommentResponse updateComment(Long id, CommentRequest request) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        comment.update(request.getNickname(), request.getContent());
+        return CommentResponse.from(comment);
+    }
 }

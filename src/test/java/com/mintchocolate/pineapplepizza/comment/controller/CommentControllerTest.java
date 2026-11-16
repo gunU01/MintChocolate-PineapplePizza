@@ -1,5 +1,6 @@
 package com.mintchocolate.pineapplepizza.comment.controller;
 
+import com.mintchocolate.pineapplepizza.comment.dto.CommentRequest;
 import com.mintchocolate.pineapplepizza.comment.entity.Comment;
 import com.mintchocolate.pineapplepizza.comment.repository.CommentRepository;
 import com.mintchocolate.pineapplepizza.debate.entity.Debate;
@@ -8,11 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -64,4 +68,5 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$[0].content").value("두 번째 댓글"))
                 .andExpect(jsonPath("$[1].content").value("첫 번째 댓글"));
     }
+
 }
