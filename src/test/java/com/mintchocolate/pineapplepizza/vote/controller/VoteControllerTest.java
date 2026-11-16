@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -186,4 +187,46 @@ class VoteControllerTest {
         result.andExpect(status().isNotFound());
         assertThat(voteRepository.count()).isEqualTo(beforeCount);
     }
+
+    @Test
+    void getMyVote() throws Exception {
+        Debate debate = debateRepository.findById(1L).orElseThrow();
+        Vote vote = voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+        voteRepository.save(new Vote(debate, "voter-b", VoteChoice.B));
+
+        ResultActions result = mockMvc.perform(get("/api/debates/{id}/votes/me", 1L)
+                .header("X-Voter-Key", "voter-a"));
+
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(vote.getId()))
+                .andExpect(jsonPath("$.debateId").value(1))
+                .andExpect(jsonPath("$.choice").value("A"))
+                .andExpect(jsonPath("$.createdAt").isNotEmpty())
+                .andExpect(jsonPath("$.voterKey").doesNotExist());
+    }
+
+    @Test
+    void getMyVoteWithoutVote() throws Exception {
+        mockMvc.perform(get("/api/debates/{id}/votes/me", 1L)
+                        .header("X-Voter-Key", "voter-a"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getMyVoteWithOtherKey() throws Exception {
+        Debate debate = debateRepository.findById(1L).orElseThrow();
+        voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+
+        mockMvc.perform(get("/api/debates/{id}/votes/me", 1L)
+                        .header("X-Voter-Key", "voter-b"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getMyVoteWithNonExistentDebate() throws Exception {
+        mockMvc.perform(get("/api/debates/{id}/votes/me", 999L)
+                        .header("X-Voter-Key", "voter-a"))
+                .andExpect(status().isNotFound());
+    }
+
 }

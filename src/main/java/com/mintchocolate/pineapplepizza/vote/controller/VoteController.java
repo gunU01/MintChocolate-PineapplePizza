@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,5 +31,12 @@ public class VoteController {
             @Valid @RequestBody VoteRequest request) {
         VoteResponse response = voteService.createVote(debateId, voterKey, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/me")
+    public VoteResponse getMyVote(
+            @PathVariable Long debateId,
+            @RequestHeader("X-Voter-Key") @NotBlank @Size(max = 100) String voterKey) {
+        return voteService.getMyVote(debateId, voterKey);
     }
 }

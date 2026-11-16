@@ -7,8 +7,6 @@ import com.mintchocolate.pineapplepizza.vote.dto.VoteResponse;
 import com.mintchocolate.pineapplepizza.vote.entity.Vote;
 import com.mintchocolate.pineapplepizza.vote.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,19 +30,19 @@ public class VoteServiceImpl implements VoteService {
         }
 
         Vote vote = new Vote(debate, voterKey, request.getChoice());
-        try {
-            Vote savedVote = voteRepository.saveAndFlush(vote);
-            return VoteResponse.from(savedVote);
-        } catch (DataIntegrityViolationException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ConstraintViolationException violation
-                    && "23505".equals(violation.getSQLState())
-                    && violation.getConstraintName() != null
-                    && violation.getConstraintName().toLowerCase(java.util.Locale.ROOT)
-                            .contains("uk_votes_debate_voter")) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT);
-            }
-            throw e;
+        Vote savedVote = voteRepository.save(vote);
+        return VoteResponse.from(savedVote);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VoteResponse getMyVote(Long debateId, String voterKey) {
+        if (!debateRepository.existsById(debateId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+
+        Vote vote = voteRepository.findByDebateIdAndVoterKey(debateId, voterKey)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return VoteResponse.from(vote);
     }
 }
