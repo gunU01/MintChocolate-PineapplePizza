@@ -55,6 +55,11 @@ public class DebateServiceImpl implements DebateService {
     public DebateResponse updateDebate(Long id, DebateRequest request) {
         Debate debate = debateRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        boolean optionsChanged = !debate.getOptionA().equals(request.getOptionA())
+                || !debate.getOptionB().equals(request.getOptionB());
+        if (optionsChanged && voteRepository.existsByDebateId(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
         debate.update(
                 request.getTitle(),
                 request.getDescription(),

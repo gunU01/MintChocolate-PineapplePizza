@@ -196,6 +196,50 @@ class DebateControllerTest {
     }
 
     @Test
+    void updateDebateOptionsWithVotes() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(3L).orElseThrow();
+        voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+        DebateRequest request = new DebateRequest("수정한 제목", "수정한 설명", "7시간 미만", "8시간 이상");
+        JsonMapper jsonMapper = JsonMapper.builder().build();
+        String requestBody = jsonMapper.writeValueAsString(request);
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/debates/{id}", debate.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody));
+
+        // then
+        result.andExpect(status().isConflict());
+        assertThat(debate.getTitle()).isEqualTo("다들 몇 시간 정도 주무시나요");
+        assertThat(debate.getDescription()).isEqualTo("제곧내");
+        assertThat(debate.getOptionA()).isEqualTo("7시간 미만");
+        assertThat(debate.getOptionB()).isEqualTo("7시간 이상");
+    }
+
+    @Test
+    void updateDebateTitleAndDescriptionWithVotes() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(3L).orElseThrow();
+        voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+        DebateRequest request = new DebateRequest("수정한 제목", "수정한 설명", "7시간 미만", "7시간 이상");
+        JsonMapper jsonMapper = JsonMapper.builder().build();
+        String requestBody = jsonMapper.writeValueAsString(request);
+
+        // when
+        ResultActions result = mockMvc.perform(put("/api/debates/{id}", debate.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value(request.getTitle()))
+                .andExpect(jsonPath("$.description").value(request.getDescription()))
+                .andExpect(jsonPath("$.optionA").value("7시간 미만"))
+                .andExpect(jsonPath("$.optionB").value("7시간 이상"));
+    }
+
+    @Test
     void updateDebateWithBlankTitle() throws Exception {
         // given
         Long debateId = 3L;

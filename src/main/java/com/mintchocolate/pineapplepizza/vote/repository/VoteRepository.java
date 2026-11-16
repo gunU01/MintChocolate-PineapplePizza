@@ -11,5 +11,7 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
 
     boolean existsByDebateIdAndVoterKey(Long debateId, String voterKey);
 
+    boolean existsByDebateId(Long debateId);
+
     void deleteByDebateId(Long debateId);
 }
