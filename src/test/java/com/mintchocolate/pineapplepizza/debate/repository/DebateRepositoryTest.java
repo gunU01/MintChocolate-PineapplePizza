@@ -4,6 +4,9 @@ import com.mintchocolate.pineapplepizza.debate.entity.Debate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -58,6 +61,24 @@ class DebateRepositoryTest {
         assertThat(firstDebate.getOptionA()).isEqualTo("7살로 돌아가기");
         assertThat(firstDebate.getOptionB()).isEqualTo("이번 주 로또 당첨되기");
         assertThat(firstDebate.getCreatedAt()).isNotNull();
+    }
+
+    @Test
+    void findByTitleContainingIgnoreCase() {
+        // given
+        Debate firstDebate = debateRepository.save(new Debate("Java VS Python", "언어 선택", "Java", "Python"));
+        Debate secondDebate = debateRepository.save(new Debate("JAVA VS Kotlin", "언어 선택", "Java", "Kotlin"));
+        debateRepository.save(new Debate("프로그래밍 언어 선택", "Java도 후보입니다", "C", "Python"));
+
+        // when
+        PageRequest pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt", "id"));
+        Page<Debate> debates = debateRepository.findByTitleContainingIgnoreCase("java", pageable);
+
+        // then
+        assertThat(debates.getTotalElements()).isEqualTo(2);
+        assertThat(debates.getContent()).hasSize(2);
+        assertThat(debates.getContent().get(0).getId()).isEqualTo(secondDebate.getId());
+        assertThat(debates.getContent().get(1).getId()).isEqualTo(firstDebate.getId());
     }
 
     @Test

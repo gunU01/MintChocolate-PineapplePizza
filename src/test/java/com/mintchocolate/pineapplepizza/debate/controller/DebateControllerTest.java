@@ -145,16 +145,113 @@ class DebateControllerTest {
 
         // then
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(4))
-                .andExpect(jsonPath("$[0].id").value(savedDebate.getId().intValue()))
-                .andExpect(jsonPath("$[0].title").value("평생 여름 VS 평생 겨울"))
-                .andExpect(jsonPath("$[0].description").value("하나만 선택한다면?"))
-                .andExpect(jsonPath("$[0].optionA").value("여름"))
-                .andExpect(jsonPath("$[0].optionB").value("겨울"))
-                .andExpect(jsonPath("$[0].createdAt").isNotEmpty())
-                .andExpect(jsonPath("$[1].id").value(3))
-                .andExpect(jsonPath("$[2].id").value(2))
-                .andExpect(jsonPath("$[3].id").value(1));
+                .andExpect(jsonPath("$.content.length()").value(4))
+                .andExpect(jsonPath("$.content[0].id").value(savedDebate.getId().intValue()))
+                .andExpect(jsonPath("$.content[0].title").value("평생 여름 VS 평생 겨울"))
+                .andExpect(jsonPath("$.content[0].description").value("하나만 선택한다면?"))
+                .andExpect(jsonPath("$.content[0].optionA").value("여름"))
+                .andExpect(jsonPath("$.content[0].optionB").value("겨울"))
+                .andExpect(jsonPath("$.content[0].createdAt").isNotEmpty())
+                .andExpect(jsonPath("$.content[1].id").value(3))
+                .andExpect(jsonPath("$.content[2].id").value(2))
+                .andExpect(jsonPath("$.content[3].id").value(1))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalElements").value(4))
+                .andExpect(jsonPath("$.totalPages").value(1));
+    }
+
+    @Test
+    void getDebatesWithPaging() throws Exception {
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("page", "2")
+                .param("size", "2"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(1))
+                .andExpect(jsonPath("$.page").value(2))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void getDebatesBeyondLastPage() throws Exception {
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("page", "3")
+                .param("size", "2"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.page").value(3))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void getDebatesWithInvalidPagination() throws Exception {
+        // when, then
+        mockMvc.perform(get("/api/debates").param("page", "0"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/debates").param("size", "0"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/debates").param("size", "101"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getDebatesWithKeyword() throws Exception {
+        // given
+        debateRepository.save(new Debate("수면 시간은 몇 시간이 적당할까요", "평소 수면 시간을 골라 주세요.", "6시간 미만", "6시간 이상"));
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("keyword", " 시간 ")
+                .param("page", "2")
+                .param("size", "1"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(3))
+                .andExpect(jsonPath("$.content[0].title").value("다들 몇 시간 정도 주무시나요"))
+                .andExpect(jsonPath("$.page").value(2))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2));
+    }
+
+    @Test
+    void getDebatesWithBlankKeyword() throws Exception {
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("keyword", " "));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(3))
+                .andExpect(jsonPath("$.content[0].id").value(3))
+                .andExpect(jsonPath("$.content[1].id").value(2))
+                .andExpect(jsonPath("$.content[2].id").value(1));
+    }
+
+    @Test
+    void getDebatesWithNoMatchingKeyword() throws Exception {
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates")
+                .param("keyword", "없는검색어"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
     }
 
     @Test
@@ -167,8 +264,10 @@ class DebateControllerTest {
 
         // then
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
     }
 
     @Test

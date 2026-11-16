@@ -1,5 +1,7 @@
 package com.mintchocolate.pineapplepizza.debate.controller;
 
+import com.mintchocolate.pineapplepizza.debate.dto.DebatePageRequest;
+import com.mintchocolate.pineapplepizza.debate.dto.DebatePageResponse;
 import com.mintchocolate.pineapplepizza.debate.dto.DebateRequest;
 import com.mintchocolate.pineapplepizza.debate.dto.DebateResponse;
 import com.mintchocolate.pineapplepizza.debate.service.DebateService;
@@ -14,9 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/debates")
@@ -38,9 +39,11 @@ public class DebateController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DebateResponse>> getDebates() {
-        List<DebateResponse> responses = debateService.getDebates();
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<DebatePageResponse> getDebates(
+            @RequestParam(required = false) String keyword,
+            @Valid DebatePageRequest request) {
+        DebatePageResponse response = DebatePageResponse.from(debateService.getDebates(keyword, request));
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
