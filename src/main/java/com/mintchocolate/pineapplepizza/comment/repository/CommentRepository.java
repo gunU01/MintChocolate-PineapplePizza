@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
+    void deleteByDebateId(Long debateId);
     List<Comment> findByDebateIdOrderByCreatedAtDescIdDesc(Long debateId);
 }
