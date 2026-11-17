@@ -8,4 +8,8 @@ public interface VoteService {
     VoteResponse createVote(Long debateId, String voterKey, VoteRequest request);
 
     VoteResponse getMyVote(Long debateId, String voterKey);
+
+    VoteResponse updateMyVote(Long debateId, String voterKey, VoteRequest request);
+
+    void deleteMyVote(Long debateId, String voterKey);
 }
