@@ -60,4 +60,12 @@ public class CommentServiceImpl implements CommentService {
         comment.update(request.getNickname(), request.getContent());
         return CommentResponse.from(comment);
     }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long id) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        commentRepository.delete(comment);
+    }
 }
