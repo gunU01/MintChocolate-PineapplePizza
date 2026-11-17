@@ -15,8 +15,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,4 +72,22 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$[1].content").value("첫 번째 댓글"));
     }
 
+    @Test
+    void deleteComment() throws Exception {
+        // given
+        Debate debate = debateRepository.save(
+                new Debate("평생 여름 VS 평생 겨울", "하나만 선택한다면?", "여름", "겨울"));
+        Comment comment = commentRepository.save(new Comment(debate, "석주", "삭제할 댓글"));
+        Comment otherComment = commentRepository.save(new Comment(debate, "다른 작성자", "남겨둘 댓글"));
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/comments/{id}", comment.getId()));
+
+        // then
+        result.andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+        assertThat(commentRepository.findById(comment.getId())).isEmpty();
+        assertThat(debateRepository.existsById(debate.getId())).isTrue();
+        assertThat(commentRepository.existsById(otherComment.getId())).isTrue();
+    }
 }
