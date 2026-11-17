@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -264,5 +265,35 @@ class VoteControllerTest {
         // then
         result.andExpect(status().isNotFound());
         assertThat(vote.getChoice()).isEqualTo(VoteChoice.A);
+    }
+
+    @Test
+    void deleteMyVote() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(1L).orElseThrow();
+        Vote vote = voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/debates/1/votes/me")
+                .header("X-Voter-Key", "voter-a"));
+
+        // then
+        result.andExpect(status().isNoContent());
+        assertThat(voteRepository.existsById(vote.getId())).isFalse();
+    }
+
+    @Test
+    void deleteMyVoteWithOtherKey() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(1L).orElseThrow();
+        Vote vote = voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+
+        // when
+        ResultActions result = mockMvc.perform(delete("/api/debates/1/votes/me")
+                .header("X-Voter-Key", "voter-b"));
+
+        // then
+        result.andExpect(status().isNotFound());
+        assertThat(voteRepository.existsById(vote.getId())).isTrue();
     }
 }

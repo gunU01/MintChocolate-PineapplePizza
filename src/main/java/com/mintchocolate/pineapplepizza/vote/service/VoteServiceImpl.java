@@ -58,4 +58,16 @@ public class VoteServiceImpl implements VoteService {
         vote.changeChoice(request.getChoice());
         return VoteResponse.from(vote);
     }
+
+    @Override
+    @Transactional
+    public void deleteMyVote(Long debateId, String voterKey) {
+        if (!debateRepository.existsById(debateId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        Vote vote = voteRepository.findByDebateIdAndVoterKey(debateId, voterKey)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        voteRepository.delete(vote);
+    }
 }
