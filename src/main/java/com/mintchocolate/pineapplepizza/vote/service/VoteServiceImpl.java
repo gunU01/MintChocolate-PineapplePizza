@@ -4,7 +4,9 @@ import com.mintchocolate.pineapplepizza.debate.entity.Debate;
 import com.mintchocolate.pineapplepizza.debate.repository.DebateRepository;
 import com.mintchocolate.pineapplepizza.vote.dto.VoteRequest;
 import com.mintchocolate.pineapplepizza.vote.dto.VoteResponse;
+import com.mintchocolate.pineapplepizza.vote.dto.VoteResultResponse;
 import com.mintchocolate.pineapplepizza.vote.entity.Vote;
+import com.mintchocolate.pineapplepizza.vote.entity.VoteChoice;
 import com.mintchocolate.pineapplepizza.vote.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -69,5 +71,26 @@ public class VoteServiceImpl implements VoteService {
         Vote vote = voteRepository.findByDebateIdAndVoterKey(debateId, voterKey)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         voteRepository.delete(vote);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VoteResultResponse getVoteResults(Long debateId) {
+        if (!debateRepository.existsById(debateId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        long votesA = voteRepository.countByDebateIdAndChoice(debateId, VoteChoice.A);
+        long votesB = voteRepository.countByDebateIdAndChoice(debateId, VoteChoice.B);
+        long totalVotes = votesA + votesB;
+        double percentageA = 0.0;
+        double percentageB = 0.0;
+
+        if (totalVotes > 0) {
+            percentageA = Math.round(votesA * 1000.0 / totalVotes) / 10.0;
+            percentageB = Math.round(votesB * 1000.0 / totalVotes) / 10.0;
+        }
+
+        return new VoteResultResponse(debateId, totalVotes, votesA, votesB, percentageA, percentageB);
     }
 }

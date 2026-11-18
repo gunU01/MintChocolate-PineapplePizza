@@ -296,4 +296,37 @@ class VoteControllerTest {
         result.andExpect(status().isNotFound());
         assertThat(voteRepository.existsById(vote.getId())).isTrue();
     }
+
+    @Test
+    void getVoteResults() throws Exception {
+        // given
+        Debate debate = debateRepository.findById(1L).orElseThrow();
+        voteRepository.save(new Vote(debate, "voter-a", VoteChoice.A));
+        voteRepository.save(new Vote(debate, "voter-b", VoteChoice.A));
+        voteRepository.save(new Vote(debate, "voter-c", VoteChoice.B));
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/debates/1/votes/results"));
+
+        // then
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.debateId").value(1))
+                .andExpect(jsonPath("$.totalVotes").value(3))
+                .andExpect(jsonPath("$.votesA").value(2))
+                .andExpect(jsonPath("$.votesB").value(1))
+                .andExpect(jsonPath("$.percentageA").value(66.7))
+                .andExpect(jsonPath("$.percentageB").value(33.3));
+    }
+
+    @Test
+    void getVoteResultsWithoutVotes() throws Exception {
+        ResultActions result = mockMvc.perform(get("/api/debates/1/votes/results"));
+
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalVotes").value(0))
+                .andExpect(jsonPath("$.votesA").value(0))
+                .andExpect(jsonPath("$.votesB").value(0))
+                .andExpect(jsonPath("$.percentageA").value(0.0))
+                .andExpect(jsonPath("$.percentageB").value(0.0));
+    }
 }

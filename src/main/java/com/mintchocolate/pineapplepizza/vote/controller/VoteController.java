@@ -2,6 +2,7 @@ package com.mintchocolate.pineapplepizza.vote.controller;
 
 import com.mintchocolate.pineapplepizza.vote.dto.VoteRequest;
 import com.mintchocolate.pineapplepizza.vote.dto.VoteResponse;
+import com.mintchocolate.pineapplepizza.vote.dto.VoteResultResponse;
 import com.mintchocolate.pineapplepizza.vote.service.VoteService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -56,5 +57,10 @@ public class VoteController {
             @RequestHeader("X-Voter-Key") @NotBlank @Size(max = 100) String voterKey) {
         voteService.deleteMyVote(debateId, voterKey);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/results")
+    public VoteResultResponse getVoteResults(@PathVariable Long debateId) {
+        return voteService.getVoteResults(debateId);
     }
 }

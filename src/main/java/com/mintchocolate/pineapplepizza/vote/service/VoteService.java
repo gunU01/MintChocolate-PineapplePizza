@@ -2,6 +2,7 @@ package com.mintchocolate.pineapplepizza.vote.service;
 
 import com.mintchocolate.pineapplepizza.vote.dto.VoteRequest;
 import com.mintchocolate.pineapplepizza.vote.dto.VoteResponse;
+import com.mintchocolate.pineapplepizza.vote.dto.VoteResultResponse;
 
 public interface VoteService {
 
@@ -12,4 +13,6 @@ public interface VoteService {
     VoteResponse updateMyVote(Long debateId, String voterKey, VoteRequest request);
 
     void deleteMyVote(Long debateId, String voterKey);
+
+    VoteResultResponse getVoteResults(Long debateId);
 }
